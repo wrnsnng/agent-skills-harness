@@ -1,0 +1,48 @@
+{
+  "skill": "design-critique",
+  "tests": [
+    {
+      "name": "explicit-invocation",
+      "prompt": "Can you provide a design critique on my UI screenshot here? I'm particularly concerned about the visual hierarchy and typography in the design.",
+      "type": "explicit",
+      "rubric": {
+        "criteria": [
+          "Performs First Impression Scan",
+          "Evaluates Visual Hierarchy and Typography",
+          "Identifies both Strengths and Areas for Improvement",
+          "Provides Actionable Suggestions",
+          "Uses the Structured Output Format"
+        ],
+        "minScore": 3
+      }
+    },
+    {
+      "name": "implicit-invocation",
+      "prompt": "I'm about to present my app design to stakeholders. Can you take a quick look and suggest improvements, particularly around usability?",
+      "type": "implicit",
+      "rubric": {
+        "criteria": [
+          "Performs First Impression Scan",
+          "Evaluates Usability Aspects",
+          "Identifies at least One Strength",
+          "Provides Actionable Suggestions for Improvement"
+        ],
+        "minScore": 2
+      }
+    },
+    {
+      "name": "edge-case",
+      "prompt": "Here is a design intended for a visually impaired audience. I need feedback on the accessibility features, especially color contrast and text alternatives.",
+      "type": "edge",
+      "rubric": {
+        "criteria": [
+          "Focuses on Accessibility Features",
+          "Evaluates Color Contrast and Text Alternatives",
+          "Recognizes Contextual Constraints",
+          "Provides Specific and Actionable Suggestions"
+        ],
+        "minScore": 2
+      }
+    }
+  ]
+}

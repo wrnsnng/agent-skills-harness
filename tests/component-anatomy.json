@@ -1,0 +1,49 @@
+{
+  "skill": "component-anatomy",
+  "tests": [
+    {
+      "name": "explicit-invocation",
+      "prompt": "Can you provide a component spec for a date picker, detailing its anatomy and states?",
+      "type": "explicit",
+      "rubric": {
+        "criteria": [
+          "Includes component's overview and primary use case",
+          "Provides a detailed anatomy map",
+          "Lists all relevant states from the state matrix",
+          "Specifies accessibility requirements",
+          "Describes responsive behavior"
+        ],
+        "minScore": 3
+      }
+    },
+    {
+      "name": "implicit-invocation",
+      "prompt": "I'm designing a new combobox feature in our app. I need to ensure it covers all interaction and accessibility requirements.",
+      "type": "implicit",
+      "rubric": {
+        "criteria": [
+          "Identifies combobox anatomy, including sub-parts",
+          "Covers all interactive states and variants",
+          "Specifies accessibility roles and attributes",
+          "Describes keyboard interactions and focus management"
+        ],
+        "minScore": 3
+      }
+    },
+    {
+      "name": "edge-case",
+      "prompt": "Our data table component integrates pagination, filtering, and expandable rows. What should we consider for completeness?",
+      "type": "edge",
+      "rubric": {
+        "criteria": [
+          "Breaks down sub-components (header, row, cell, pagination, toolbar)",
+          "Identifies interactive states and validation states",
+          "Highlights common pitfalls specific to complex components",
+          "Addresses platform divergence, like different behaviors on mobile",
+          "Discusses theming boundaries and responsive behavior"
+        ],
+        "minScore": 3
+      }
+    }
+  ]
+}

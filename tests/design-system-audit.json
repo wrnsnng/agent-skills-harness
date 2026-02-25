@@ -1,0 +1,48 @@
+{
+  "skill": "design-system-audit",
+  "tests": [
+    {
+      "name": "explicit-invocation",
+      "prompt": "Please perform a design system audit on our latest component library, focusing particularly on token consistency and naming conventions.",
+      "type": "explicit",
+      "rubric": {
+        "criteria": [
+          "Includes a summary of overall system health and highlights major findings.",
+          "Analyzes token consistency, identifying any redundancy or gaps.",
+          "Evaluates naming conventions across components and tokens.",
+          "Provides a maturity score and offers recommendations for improvement.",
+          "Addresses critical areas such as accessibility and spacing/density issues."
+        ],
+        "minScore": 3
+      }
+    },
+    {
+      "name": "implicit-invocation",
+      "prompt": "We're preparing for a major release and need to ensure our design library is robust and ready. Can you help us identify any weak areas or gaps?",
+      "type": "implicit",
+      "rubric": {
+        "criteria": [
+          "Identifies gaps or weaknesses in the design system.",
+          "Evaluates the maturity and completeness of components.",
+          "Suggests improvements or optimizations needed for a major release.",
+          "Checks for alignment with common design system taxonomies."
+        ],
+        "minScore": 2
+      }
+    },
+    {
+      "name": "edge-case",
+      "prompt": "We have a collection of unusual components that don't fit typical categories. Can you assess whether our component structure makes sense and if there are any missing elements?",
+      "type": "edge",
+      "rubric": {
+        "criteria": [
+          "Considers components that do not fit traditional categories without bias.",
+          "Evaluates the component structure for logical organization and gap analysis.",
+          "Assesses whether the unique components serve practical needs.",
+          "Provides innovative recommendations for improvement while considering edge cases."
+        ],
+        "minScore": 2
+      }
+    }
+  ]
+}

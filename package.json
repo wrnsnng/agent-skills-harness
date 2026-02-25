@@ -1,0 +1,15 @@
+{
+  "name": "agent-skills-harness",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "bun run src/cli.ts",
+    "generate": "bun run src/cli.ts --generate-tests",
+    "report": "bun run src/cli.ts --report"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "openai": "^4.80.0",
+    "chalk": "^5.4.1"
+  }
+}

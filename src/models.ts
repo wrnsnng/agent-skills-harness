@@ -127,7 +127,7 @@ export async function callModel(
 
   const resp = await getOpenAI().chat.completions.create({
     model: config.model,
-    max_tokens: 4096,
+    max_completion_tokens: 4096,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },

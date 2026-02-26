@@ -1,21 +1,30 @@
 #!/usr/bin/env bun
 import { readdir, mkdir } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { join, resolve, dirname } from "node:path";
 import { existsSync } from "node:fs";
 import { listSkills, loadSkillMd, loadTest, runTest, setSkillsDir, getSkillsDir } from "./runner.js";
 import { generateTests } from "./generator.js";
 import { MODEL_CONFIGS, hasAnthropic, hasOpenAI } from "./models.js";
 import type { TestResult } from "./types.js";
 
-const ROOT = import.meta.dir.replace("/src", "");
+// ROOT = parent of src/ directory (where this file lives)
+const ROOT = dirname(dirname(import.meta.path));
 const TESTS_DIR = join(ROOT, "tests");
 const REPORTS_DIR = join(ROOT, "reports");
 
-// Resolve skills dir from env or default
-const skillsDir = resolve(Bun.env.SKILLS_DIR ?? "./skills");
+console.log("Starting agent skills test harness...");
+
+// Resolve skills dir: --skills-dir arg > SKILLS_DIR env > ./skills/
+const skillsDirArg = process.argv.find((a) => a.startsWith("--skills-dir="))?.split("=")[1]
+  ?? process.argv[process.argv.indexOf("--skills-dir") + 1];
+const skillsDir = resolve(skillsDirArg ?? Bun.env.SKILLS_DIR ?? "./skills");
+
 if (!existsSync(skillsDir)) {
-  console.error(`Skills directory not found: ${skillsDir}`);
-  console.log("Set SKILLS_DIR env var or place skills in ./skills/");
+  console.error(`\n  ❌ Skills directory not found: ${skillsDir}\n`);
+  console.log("  Set via:");
+  console.log("    SKILLS_DIR=./path/to/skills bun run dev");
+  console.log("    bun run src/server.ts --skills-dir ./path/to/skills");
+  console.log("    Or place skills in ./skills/\n");
   process.exit(1);
 }
 setSkillsDir(skillsDir);
@@ -37,6 +46,10 @@ function broadcast(event: string, data: any) {
 let activeRun: { abort: boolean } | null = null;
 
 const port = parseInt(Bun.env.PORT ?? "3847");
+
+console.log(`\n  🧪 Agent skills test harness`);
+console.log(`  📁 Skills: ${getSkillsDir()}`);
+console.log(`  🔗 http://localhost:${port}\n`);
 
 const server = Bun.serve({
   port,
@@ -262,6 +275,4 @@ function extractDescription(skillMd: string): string {
   return descLine?.replace("description:", "").trim().replace(/^['">]+|['">]+$/g, "") ?? "";
 }
 
-console.log(`\n  🧪 Agent Skills Test Harness`);
-console.log(`  📁 Skills: ${getSkillsDir()}`);
-console.log(`  🔗 http://localhost:${port}\n`);
+// Server is running (startup log already printed above Bun.serve)

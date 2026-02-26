@@ -28,7 +28,14 @@ export async function loadTest(skillName: string, testsDir: string): Promise<Ski
 
 export async function listSkills(): Promise<string[]> {
   const entries = await readdir(skillsDir, { withFileTypes: true });
-  return entries.filter((e) => e.isDirectory()).map((e) => e.name).sort();
+  const dirs = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+  // Only include directories that have a SKILL.md at the top level
+  const valid: string[] = [];
+  for (const dir of dirs) {
+    const skillFile = Bun.file(join(skillsDir, dir, "SKILL.md"));
+    if (await skillFile.exists()) valid.push(dir);
+  }
+  return valid.sort();
 }
 
 function extractDescription(skillMd: string): string {

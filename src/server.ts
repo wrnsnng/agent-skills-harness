@@ -15,9 +15,14 @@ const REPORTS_DIR = join(ROOT, "reports");
 console.log("Starting agent skills test harness...");
 
 // Resolve skills dir: --skills-dir arg > SKILLS_DIR env > ./skills/
-const skillsDirArg = process.argv.find((a) => a.startsWith("--skills-dir="))?.split("=")[1]
-  ?? process.argv[process.argv.indexOf("--skills-dir") + 1];
-const skillsDir = resolve(skillsDirArg ?? Bun.env.SKILLS_DIR ?? "./skills");
+function parseSkillsDirArg(): string | undefined {
+  const eqArg = process.argv.find((a) => a.startsWith("--skills-dir="));
+  if (eqArg) return eqArg.split("=")[1];
+  const idx = process.argv.indexOf("--skills-dir");
+  if (idx !== -1 && idx + 1 < process.argv.length) return process.argv[idx + 1];
+  return undefined;
+}
+const skillsDir = resolve(parseSkillsDirArg() ?? Bun.env.SKILLS_DIR ?? "./skills");
 
 if (!existsSync(skillsDir)) {
   console.error(`\n  ❌ Skills directory not found: ${skillsDir}\n`);

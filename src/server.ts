@@ -132,12 +132,27 @@ const server = Bun.serve({
       // Run in background, stream progress via SSE
       (async () => {
         for (const skill of skills) {
+          const testPath = join(TESTS_DIR, `${skill}.json`);
+          const alreadyExists = await Bun.file(testPath).exists();
+          if (alreadyExists) {
+            // Delete existing so generator doesn't skip
+            const { unlink } = await import("node:fs/promises");
+            await unlink(testPath);
+            console.log(`Deleted existing test file for ${skill} — will regenerate`);
+          }
           console.log(`Generating tests for ${skill}...`);
           broadcast("generate-progress", { skill, status: "generating" });
           try {
             await generateTests([skill], TESTS_DIR);
-            console.log(`✅ ${skill} tests generated`);
-            broadcast("generate-progress", { skill, status: "done" });
+            // Verify it actually wrote
+            const wrote = await Bun.file(testPath).exists();
+            if (wrote) {
+              console.log(`✅ ${skill} tests generated`);
+              broadcast("generate-progress", { skill, status: "done" });
+            } else {
+              console.error(`❌ ${skill} — generator returned but no file written`);
+              broadcast("generate-progress", { skill, status: "error", error: "No test file written" });
+            }
           } catch (err: any) {
             console.error(`❌ ${skill} failed:`, err.message);
             broadcast("generate-progress", { skill, status: "error", error: err.message });

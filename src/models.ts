@@ -14,9 +14,9 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
   },
   gpt: {
     id: "gpt",
-    name: "GPT-4o",
+    name: "GPT-5.3",
     provider: "openai",
-    model: "gpt-4o",
+    model: "gpt-5.3",
   },
   o3: {
     id: "o3",

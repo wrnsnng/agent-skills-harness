@@ -3,7 +3,7 @@ import chalk from "chalk";
 import { parseArgs } from "node:util";
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import { listSkills, loadTest, runTest } from "./runner.js";
+import { listSkills, loadTest, runTest, setSkillsDir } from "./runner.js";
 import { generateTests } from "./generator.js";
 import { printResults, printScorecard, buildReport, loadLatestReport } from "./report.js";
 import { MODEL_CONFIGS } from "./models.js";
@@ -17,6 +17,7 @@ const { values } = parseArgs({
   options: {
     skills: { type: "string", short: "s" },
     models: { type: "string", short: "m" },
+    "skills-dir": { type: "string", short: "d" },
     all: { type: "boolean", short: "a" },
     "generate-tests": { type: "boolean", short: "g" },
     report: { type: "boolean", short: "r" },
@@ -35,11 +36,34 @@ ${chalk.dim("Usage:")}
   bun run src/cli.ts --all -m claude,gpt      Test with specific models
   bun run src/cli.ts --generate-tests         Generate test cases
   bun run src/cli.ts --report                 Show last report
+  bun run src/cli.ts -d ./path/to/skills      Use custom skills directory
+
+${chalk.dim("Skills directory (resolved in order):")}
+  1. --skills-dir / -d flag
+  2. SKILLS_DIR env var
+  3. ./skills/ in current directory
 
 ${chalk.dim("Models:")} ${Object.keys(MODEL_CONFIGS).join(", ")}
 `);
   process.exit(0);
 }
+
+// Resolve skills directory
+import { resolve } from "node:path";
+import { existsSync } from "node:fs";
+
+const resolvedSkillsDir = resolve(
+  values["skills-dir"] ?? Bun.env.SKILLS_DIR ?? "./skills"
+);
+
+if (!existsSync(resolvedSkillsDir)) {
+  console.error(chalk.red(`Skills directory not found: ${resolvedSkillsDir}`));
+  console.log(chalk.dim("Set via --skills-dir, SKILLS_DIR env var, or place skills in ./skills/"));
+  process.exit(1);
+}
+
+setSkillsDir(resolvedSkillsDir);
+console.log(chalk.dim(`Skills: ${resolvedSkillsDir}`));
 
 await mkdir(TESTS_DIR, { recursive: true });
 await mkdir(REPORTS_DIR, { recursive: true });

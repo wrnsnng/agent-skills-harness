@@ -24,6 +24,14 @@ export OPENAI_API_KEY=sk-...      # GPT-4o
 ## Usage
 
 ```bash
+# Point to your skills directory
+bun run src/cli.ts -d ./path/to/skills --all
+
+# Or set via env var
+export SKILLS_DIR=./path/to/skills
+
+# Or just put skills in ./skills/ and it'll find them
+
 # Generate test cases for all skills
 bun run src/cli.ts --generate-tests
 
@@ -38,6 +46,16 @@ bun run src/cli.ts --all -m claude,gpt
 
 # View last report
 bun run src/cli.ts --report
+```
+
+The skills directory should contain folders, each with a `SKILL.md`:
+```
+skills/
+├── component-anatomy/
+│   └── SKILL.md
+├── design-critique/
+│   └── SKILL.md
+└── ...
 ```
 
 ## Available models

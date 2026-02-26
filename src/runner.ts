@@ -4,10 +4,18 @@ import { callModel } from "./models.js";
 import { judge } from "./judge.js";
 import type { ModelConfig, SkillTest, TestResult } from "./types.js";
 
-const SKILLS_DIR = "/Users/george/_GitHub/agent-skills/skills";
+let skillsDir = "";
+
+export function setSkillsDir(dir: string) {
+  skillsDir = dir;
+}
+
+export function getSkillsDir(): string {
+  return skillsDir;
+}
 
 export async function loadSkillMd(skillName: string): Promise<string> {
-  const path = join(SKILLS_DIR, skillName, "SKILL.md");
+  const path = join(skillsDir, skillName, "SKILL.md");
   return Bun.file(path).text();
 }
 
@@ -19,7 +27,7 @@ export async function loadTest(skillName: string, testsDir: string): Promise<Ski
 }
 
 export async function listSkills(): Promise<string[]> {
-  const entries = await readdir(SKILLS_DIR, { withFileTypes: true });
+  const entries = await readdir(skillsDir, { withFileTypes: true });
   return entries.filter((e) => e.isDirectory()).map((e) => e.name).sort();
 }
 

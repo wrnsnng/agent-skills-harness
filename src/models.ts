@@ -18,12 +18,6 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
     provider: "openai",
     model: "gpt-5.3",
   },
-  o3: {
-    id: "o3",
-    name: "o3-mini",
-    provider: "openai",
-    model: "o3-mini",
-  },
 };
 
 // Try to load OAuth tokens from Claude Code / Codex CLI credentials

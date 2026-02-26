@@ -15,7 +15,11 @@ export function getSkillsDir(): string {
 }
 
 export async function loadSkillMd(skillName: string): Promise<string> {
-  const path = join(skillsDir, skillName, "SKILL.md");
+  // If skillsDir IS the skill (single-skill mode), SKILL.md is at the root
+  const rootSkillFile = join(skillsDir, "SKILL.md");
+  const nestedSkillFile = join(skillsDir, skillName, "SKILL.md");
+  const rootExists = await Bun.file(rootSkillFile).exists();
+  const path = rootExists ? rootSkillFile : nestedSkillFile;
   return Bun.file(path).text();
 }
 
@@ -27,6 +31,14 @@ export async function loadTest(skillName: string, testsDir: string): Promise<Ski
 }
 
 export async function listSkills(): Promise<string[]> {
+  // Check if SKILLS_DIR itself is a single skill (has SKILL.md at root)
+  const rootSkillFile = Bun.file(join(skillsDir, "SKILL.md"));
+  if (await rootSkillFile.exists()) {
+    // SKILLS_DIR points directly at a skill, not a parent folder
+    const name = skillsDir.split("/").pop()!;
+    return [name];
+  }
+
   const entries = await readdir(skillsDir, { withFileTypes: true });
   const dirs = entries.filter((e) => e.isDirectory()).map((e) => e.name);
   // Only include directories that have a SKILL.md at the top level

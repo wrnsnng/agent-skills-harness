@@ -62,6 +62,7 @@ const server = Bun.serve({
   async fetch(req) {
     const url = new URL(req.url);
 
+    try {
     // CORS
     if (req.method === "OPTIONS") {
       return new Response(null, { headers: corsHeaders() });
@@ -99,6 +100,7 @@ const server = Bun.serve({
 
     if (url.pathname === "/api/skills") {
       const skills = await listSkills();
+      console.log(`Found ${skills.length} skills:`, skills);
       const result = await Promise.all(
         skills.map(async (name) => {
           const md = await loadSkillMd(name);
@@ -126,14 +128,18 @@ const server = Bun.serve({
 
     if (url.pathname === "/api/generate-tests" && req.method === "POST") {
       const { skills } = (await req.json()) as { skills: string[] };
+      console.log("Generate tests requested for:", skills);
       // Run in background, stream progress via SSE
       (async () => {
         for (const skill of skills) {
+          console.log(`Generating tests for ${skill}...`);
           broadcast("generate-progress", { skill, status: "generating" });
           try {
             await generateTests([skill], TESTS_DIR);
+            console.log(`✅ ${skill} tests generated`);
             broadcast("generate-progress", { skill, status: "done" });
           } catch (err: any) {
+            console.error(`❌ ${skill} failed:`, err.message);
             broadcast("generate-progress", { skill, status: "error", error: err.message });
           }
         }
@@ -259,6 +265,10 @@ const server = Bun.serve({
     }
 
     return new Response("Not found", { status: 404 });
+    } catch (err: any) {
+      console.error("Request error:", url.pathname, err.message);
+      return json({ error: err.message }, 500);
+    }
   },
 });
 

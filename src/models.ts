@@ -81,9 +81,17 @@ let openai: OpenAI | null = null;
 
 function getAnthropic(): Anthropic {
   if (!anthropic) {
-    const key = resolveAnthropicKey();
-    if (!key) throw new Error("No Anthropic credentials found (set ANTHROPIC_API_KEY or log in with `claude`)");
-    anthropic = new Anthropic({ apiKey: key });
+    const envKey = Bun.env.ANTHROPIC_API_KEY;
+    const oauthToken = loadClaudeOAuthToken();
+    
+    if (envKey) {
+      anthropic = new Anthropic({ apiKey: envKey });
+    } else if (oauthToken) {
+      // OAuth token from Claude Code uses Bearer auth, not x-api-key
+      anthropic = new Anthropic({ authToken: oauthToken });
+    } else {
+      throw new Error("No Anthropic credentials found (set ANTHROPIC_API_KEY or log in with `claude`)");
+    }
   }
   return anthropic;
 }

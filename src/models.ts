@@ -14,9 +14,9 @@ export const MODEL_CONFIGS: Record<string, ModelConfig> = {
   },
   gpt: {
     id: "gpt",
-    name: "GPT-5.3",
+    name: "GPT-4o",
     provider: "openai",
-    model: "gpt-5.3",
+    model: "gpt-4o",
   },
 };
 
@@ -121,7 +121,7 @@ export async function callModel(
 
   const resp = await getOpenAI().chat.completions.create({
     model: config.model,
-    max_completion_tokens: 4096,
+    max_tokens: 4096,
     messages: [
       { role: "system", content: systemPrompt },
       { role: "user", content: userPrompt },

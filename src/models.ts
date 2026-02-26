@@ -69,7 +69,9 @@ function resolveOpenAIKey(): string | undefined {
 }
 
 export function hasAnthropic(): boolean {
-  return !!resolveAnthropicKey();
+  // Only count as available if we have a real API key, not just an OAuth token
+  // Claude Code OAuth tokens don't work with the Messages API
+  return !!Bun.env.ANTHROPIC_API_KEY;
 }
 
 export function hasOpenAI(): boolean {

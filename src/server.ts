@@ -58,6 +58,7 @@ console.log(`  🔗 http://localhost:${port}\n`);
 
 const server = Bun.serve({
   port,
+  idleTimeout: 255, // max allowed — SSE connections need to stay open
   async fetch(req) {
     const url = new URL(req.url);
 

@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "dev": "bun run src/server.ts",
     "test": "bun run src/cli.ts",
     "generate": "bun run src/cli.ts --generate-tests",
     "report": "bun run src/cli.ts --report"

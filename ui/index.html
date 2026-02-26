@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent skills test harness</title>
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #141414;
+      --surface-2: #1c1c1c;
+      --border: #262626;
+      --text: #e5e5e5;
+      --text-dim: #737373;
+      --accent: #3b82f6;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #eab308;
+      --orange: #f97316;
+      --radius: 8px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      --mono: "SF Mono", "Cascadia Code", "Fira Code", monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-badges {
+      display: flex;
+      gap: 8px;
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 99px;
+      font-family: var(--mono);
+      font-weight: 500;
+    }
+
+    .badge.available { background: #052e16; color: var(--green); }
+    .badge.unavailable { background: #1c0a0a; color: var(--red); opacity: 0.5; }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab {
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+      font-family: var(--font);
+    }
+
+    .tab:hover { color: var(--text); }
+    .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+    /* Skills list */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 12px;
+    }
+
+    .skill-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+
+    .skill-card:hover { border-color: #404040; }
+    .skill-card.selected { border-color: var(--accent); }
+
+    .skill-card h3 {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-family: var(--mono);
+    }
+
+    .skill-card p {
+      font-size: 12px;
+      color: var(--text-dim);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .skill-card .meta {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .skill-card .meta span {
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .skill-card .meta .has-tests { color: var(--green); }
+    .skill-card .meta .no-tests { color: var(--orange); }
+
+    /* Controls bar */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .controls label {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .model-toggle {
+      display: flex;
+      gap: 4px;
+    }
+
+    .model-toggle button {
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-dim);
+      cursor: pointer;
+      font-family: var(--mono);
+      transition: all 0.15s;
+    }
+
+    .model-toggle button.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    .model-toggle button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    button.primary {
+      font-size: 13px;
+      padding: 6px 16px;
+      border-radius: var(--radius);
+      border: none;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+      font-family: var(--font);
+      transition: opacity 0.15s;
+    }
+
+    button.primary:hover { opacity: 0.9; }
+    button.primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    button.secondary {
+      font-size: 13px;
+      padding: 6px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 500;
+      font-family: var(--font);
+    }
+
+    button.danger {
+      font-size: 13px;
+      padding: 6px 16px;
+      border-radius: var(--radius);
+      border: none;
+      background: var(--red);
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+      font-family: var(--font);
+    }
+
+    .spacer { flex: 1; }
+
+    .selection-count {
+      font-size: 12px;
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    /* Results */
+    .results-container { margin-top: 24px; }
+
+    .scorecard {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .scorecard table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .scorecard th {
+      text-align: left;
+      padding: 10px 16px;
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      background: var(--surface-2);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .scorecard td {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--mono);
+      font-size: 13px;
+    }
+
+    .scorecard tr:last-child td { border-bottom: none; }
+
+    .scorecard td.skill-name {
+      font-weight: 500;
+      font-family: var(--font);
+    }
+
+    .score { font-weight: 600; }
+    .score.high { color: var(--green); }
+    .score.mid { color: var(--yellow); }
+    .score.low { color: var(--red); }
+
+    .pass-icon { margin-right: 4px; }
+
+    /* Detail rows */
+    .result-detail {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .result-detail-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .result-detail-header:hover { background: var(--surface-2); }
+
+    .result-detail-header .name {
+      font-weight: 500;
+      font-size: 13px;
+      flex: 1;
+    }
+
+    .result-detail-header .model-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: var(--surface-2);
+      color: var(--text-dim);
+      font-family: var(--mono);
+    }
+
+    .result-detail-header .type-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--surface-2);
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .result-detail-body {
+      display: none;
+      padding: 0 16px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .result-detail.open .result-detail-body { display: block; }
+
+    .criteria-list {
+      list-style: none;
+      margin-top: 12px;
+    }
+
+    .criteria-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .criteria-list li:last-child { border-bottom: none; }
+
+    .criteria-score {
+      font-family: var(--mono);
+      font-weight: 600;
+      font-size: 12px;
+      min-width: 32px;
+    }
+
+    .criteria-text { color: var(--text-dim); flex: 1; }
+    .criteria-reason { font-size: 12px; color: var(--text-dim); font-style: italic; }
+
+    .response-preview {
+      margin-top: 12px;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--text-dim);
+      max-height: 200px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-dim);
+      margin-top: 16px;
+      margin-bottom: 8px;
+    }
+
+    /* Live feed */
+    .live-feed {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 24px;
+      min-height: 48px;
+    }
+
+    .live-feed .entry {
+      font-size: 13px;
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .live-feed .spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Reports tab */
+    .report-list { list-style: none; }
+    .report-list li {
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .report-list li:hover { border-color: #404040; }
+    .report-list .report-date { font-weight: 500; font-size: 14px; }
+    .report-list .report-meta { font-size: 12px; color: var(--text-dim); font-family: var(--mono); }
+
+    .empty-state {
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--text-dim);
+    }
+
+    .empty-state p { font-size: 14px; margin-top: 8px; }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* Duration */
+    .duration { font-size: 11px; color: var(--text-dim); font-family: var(--mono); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🧪 Agent skills test harness</h1>
+      <div class="status-badges" id="badges"></div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="run">Run tests</button>
+      <button class="tab" data-tab="reports">Reports</button>
+    </div>
+
+    <!-- Run panel -->
+    <div class="panel active" id="panel-run">
+      <div class="controls">
+        <label>Models</label>
+        <div class="model-toggle" id="model-toggle"></div>
+        <div class="spacer"></div>
+        <span class="selection-count" id="selection-count"></span>
+        <button class="secondary" id="btn-select-all">Select all</button>
+        <button class="secondary" id="btn-generate">Generate tests</button>
+        <button class="primary" id="btn-run">Run selected</button>
+        <button class="danger" id="btn-stop" style="display:none">Stop</button>
+      </div>
+
+      <div class="skills-grid" id="skills-grid"></div>
+
+      <div id="live-area" style="display:none">
+        <div class="live-feed" id="live-feed"></div>
+      </div>
+
+      <div class="results-container" id="results-container" style="display:none"></div>
+    </div>
+
+    <!-- Reports panel -->
+    <div class="panel" id="panel-reports">
+      <ul class="report-list" id="report-list"></ul>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      skills: [],
+      selected: new Set(),
+      models: new Set(),
+      availableModels: {},
+      running: false,
+      results: [],
+    };
+
+    // --- Init ---
+    async function init() {
+      const status = await api("/api/status");
+      renderBadges(status);
+      state.availableModels = {};
+      for (const m of status.models) {
+        state.availableModels[m.id] = m;
+        if (m.available) state.models.add(m.id);
+      }
+      renderModelToggle();
+
+      state.skills = await api("/api/skills");
+      renderSkills();
+      updateSelectionCount();
+
+      connectSSE();
+    }
+
+    // --- API ---
+    async function api(path, opts) {
+      const res = await fetch(path, opts);
+      return res.json();
+    }
+
+    // --- SSE ---
+    function connectSSE() {
+      const es = new EventSource("/api/events");
+
+      es.addEventListener("run-testing", (e) => {
+        const d = JSON.parse(e.data);
+        addLiveEntry(`<span class="spinner"></span> Testing <strong>${d.skill}</strong> × ${d.model}...`);
+      });
+
+      es.addEventListener("run-result", (e) => {
+        const d = JSON.parse(e.data);
+        const icon = d.avg >= 3 ? "✓" : "✗";
+        const cls = d.avg >= 4 ? "high" : d.avg >= 3 ? "mid" : "low";
+        addLiveEntry(`<span class="score ${cls}">${icon}</span> <strong>${d.skill}</strong> × ${d.model} — <span class="score ${cls}">${d.avg.toFixed(1)}/5</span>`);
+        state.results.push(...d.results);
+      });
+
+      es.addEventListener("run-skip", (e) => {
+        const d = JSON.parse(e.data);
+        addLiveEntry(`⏭ ${d.skill} — ${d.reason}`);
+      });
+
+      es.addEventListener("run-error", (e) => {
+        const d = JSON.parse(e.data);
+        addLiveEntry(`<span class="score low">✗</span> ${d.skill} × ${d.model} — ${d.error}`);
+      });
+
+      es.addEventListener("run-complete", (e) => {
+        state.running = false;
+        document.getElementById("btn-run").disabled = false;
+        document.getElementById("btn-stop").style.display = "none";
+        document.getElementById("btn-run").style.display = "";
+        addLiveEntry("✅ Run complete");
+        renderResults();
+      });
+
+      es.addEventListener("run-stopped", () => {
+        state.running = false;
+        document.getElementById("btn-run").disabled = false;
+        document.getElementById("btn-stop").style.display = "none";
+        document.getElementById("btn-run").style.display = "";
+        addLiveEntry("⏹ Run stopped");
+        if (state.results.length) renderResults();
+      });
+
+      es.addEventListener("generate-progress", (e) => {
+        const d = JSON.parse(e.data);
+        if (d.status === "generating") addLiveEntry(`<span class="spinner"></span> Generating tests for <strong>${d.skill}</strong>...`);
+        else if (d.status === "done") addLiveEntry(`✅ ${d.skill} tests generated`);
+        else addLiveEntry(`<span class="score low">✗</span> ${d.skill} — ${d.error}`);
+      });
+
+      es.addEventListener("generate-complete", async () => {
+        addLiveEntry("✅ Test generation complete");
+        state.skills = await api("/api/skills");
+        renderSkills();
+      });
+    }
+
+    // --- Render ---
+    function renderBadges(status) {
+      const el = document.getElementById("badges");
+      el.innerHTML = status.models
+        .map((m) => `<span class="badge ${m.available ? "available" : "unavailable"}">${m.name}</span>`)
+        .join("");
+    }
+
+    function renderModelToggle() {
+      const el = document.getElementById("model-toggle");
+      el.innerHTML = Object.values(state.availableModels)
+        .map((m) => `<button data-model="${m.id}" ${m.available ? "" : "disabled"} class="${state.models.has(m.id) ? "active" : ""}">${m.id}</button>`)
+        .join("");
+
+      el.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.dataset.model;
+          if (state.models.has(id)) state.models.delete(id);
+          else state.models.add(id);
+          btn.classList.toggle("active");
+        });
+      });
+    }
+
+    function renderSkills() {
+      const el = document.getElementById("skills-grid");
+      el.innerHTML = state.skills
+        .map((s) => `
+          <div class="skill-card ${state.selected.has(s.name) ? "selected" : ""}" data-skill="${s.name}">
+            <h3>${s.name}</h3>
+            <p>${s.description}</p>
+            <div class="meta">
+              <span class="${s.hasTests ? "has-tests" : "no-tests"}">${s.hasTests ? `${s.testCount} tests` : "no tests"}</span>
+            </div>
+          </div>
+        `)
+        .join("");
+
+      el.querySelectorAll(".skill-card").forEach((card) => {
+        card.addEventListener("click", () => {
+          const name = card.dataset.skill;
+          if (state.selected.has(name)) state.selected.delete(name);
+          else state.selected.add(name);
+          card.classList.toggle("selected");
+          updateSelectionCount();
+        });
+      });
+    }
+
+    function updateSelectionCount() {
+      const el = document.getElementById("selection-count");
+      const n = state.selected.size;
+      el.textContent = n ? `${n} selected` : "";
+      document.getElementById("btn-run").disabled = n === 0 || state.models.size === 0;
+    }
+
+    function addLiveEntry(html) {
+      const area = document.getElementById("live-area");
+      area.style.display = "block";
+      const feed = document.getElementById("live-feed");
+      // Remove spinners from previous entries
+      feed.querySelectorAll(".spinner").forEach((s) => s.remove());
+      const div = document.createElement("div");
+      div.className = "entry";
+      div.innerHTML = html;
+      feed.appendChild(div);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function renderResults() {
+      const container = document.getElementById("results-container");
+      container.style.display = "block";
+
+      const skills = [...new Set(state.results.map((r) => r.skill))].sort();
+      const models = [...new Set(state.results.map((r) => r.model))].sort();
+
+      // Scorecard
+      let scorecardHtml = `<div class="scorecard"><table><thead><tr><th>Skill</th>`;
+      for (const m of models) scorecardHtml += `<th>${m}</th>`;
+      scorecardHtml += `<th>Avg</th></tr></thead><tbody>`;
+
+      for (const skill of skills) {
+        scorecardHtml += `<tr><td class="skill-name">${skill}</td>`;
+        let total = 0, count = 0;
+        for (const m of models) {
+          const mrs = state.results.filter((r) => r.skill === skill && r.model === m);
+          if (mrs.length === 0) {
+            scorecardHtml += `<td>—</td>`;
+          } else {
+            const avg = mrs.reduce((s, r) => s + r.judge.overall, 0) / mrs.length;
+            total += avg; count++;
+            scorecardHtml += `<td><span class="score ${scoreClass(avg)}">${avg.toFixed(1)}</span></td>`;
+          }
+        }
+        const skillAvg = count ? total / count : 0;
+        scorecardHtml += `<td><span class="score ${scoreClass(skillAvg)}">${skillAvg.toFixed(1)}</span></td></tr>`;
+      }
+      scorecardHtml += `</tbody></table></div>`;
+
+      // Detail cards
+      let detailsHtml = "";
+      for (const r of state.results) {
+        const icon = r.judge.passed ? `<span class="score high">✓</span>` : `<span class="score low">✗</span>`;
+        detailsHtml += `
+          <div class="result-detail">
+            <div class="result-detail-header" onclick="this.parentElement.classList.toggle('open')">
+              ${icon}
+              <span class="name">${r.skill}</span>
+              <span class="type-badge">${r.testType}</span>
+              <span class="model-badge">${r.model}</span>
+              <span class="score ${scoreClass(r.judge.overall)}">${r.judge.overall.toFixed(1)}/5</span>
+              <span class="duration">${r.durationMs}ms</span>
+            </div>
+            <div class="result-detail-body">
+              <div class="section-label">Criteria</div>
+              <ul class="criteria-list">
+                ${r.judge.scores.map((s) => `
+                  <li>
+                    <span class="criteria-score score ${scoreClass(s.score)}">${s.score}/5</span>
+                    <span class="criteria-text">${s.criterion}</span>
+                  </li>
+                  ${s.reason ? `<li style="padding-left:40px"><span class="criteria-reason">${s.reason}</span></li>` : ""}
+                `).join("")}
+              </ul>
+              ${r.judge.notes ? `<div class="section-label">Judge notes</div><p style="font-size:13px;color:var(--text-dim)">${r.judge.notes}</p>` : ""}
+              <div class="section-label">Response</div>
+              <div class="response-preview">${escapeHtml(r.response)}</div>
+            </div>
+          </div>`;
+      }
+
+      container.innerHTML = scorecardHtml + detailsHtml;
+    }
+
+    function scoreClass(score) {
+      return score >= 4 ? "high" : score >= 3 ? "mid" : "low";
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    // --- Reports tab ---
+    async function loadReports() {
+      const reports = await api("/api/reports");
+      const el = document.getElementById("report-list");
+      if (reports.length === 0) {
+        el.innerHTML = `<div class="empty-state"><p>No reports yet. Run some tests first.</p></div>`;
+        return;
+      }
+      el.innerHTML = reports.map((r) => `
+        <li data-file="${r.file}">
+          <span class="report-date">${new Date(r.timestamp).toLocaleString()}</span>
+          <span class="report-meta">${r.skillCount} skills · ${r.passed}/${r.total} passed</span>
+        </li>
+      `).join("");
+
+      el.querySelectorAll("li").forEach((li) => {
+        li.addEventListener("click", async () => {
+          const report = await api(`/api/report?file=${li.dataset.file}`);
+          state.results = report.results;
+          // Switch to run tab to show results
+          switchTab("run");
+          renderResults();
+        });
+      });
+    }
+
+    // --- Tabs ---
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+    });
+
+    function switchTab(name) {
+      document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t.dataset.tab === name));
+      document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === `panel-${name}`));
+      if (name === "reports") loadReports();
+    }
+
+    // --- Actions ---
+    document.getElementById("btn-select-all").addEventListener("click", () => {
+      const allSelected = state.selected.size === state.skills.length;
+      if (allSelected) {
+        state.selected.clear();
+      } else {
+        for (const s of state.skills) state.selected.add(s.name);
+      }
+      renderSkills();
+      updateSelectionCount();
+    });
+
+    document.getElementById("btn-generate").addEventListener("click", async () => {
+      const skills = state.selected.size ? [...state.selected] : state.skills.filter((s) => !s.hasTests).map((s) => s.name);
+      if (skills.length === 0) return;
+      document.getElementById("live-feed").innerHTML = "";
+      await api("/api/generate-tests", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ skills }),
+      });
+    });
+
+    document.getElementById("btn-run").addEventListener("click", async () => {
+      if (state.selected.size === 0 || state.models.size === 0) return;
+      state.running = true;
+      state.results = [];
+      document.getElementById("btn-run").style.display = "none";
+      document.getElementById("btn-stop").style.display = "";
+      document.getElementById("results-container").style.display = "none";
+      document.getElementById("live-feed").innerHTML = "";
+
+      await api("/api/run", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ skills: [...state.selected], models: [...state.models] }),
+      });
+    });
+
+    document.getElementById("btn-stop").addEventListener("click", async () => {
+      await api("/api/stop", { method: "POST" });
+    });
+
+    init();
+  </script>
+</body>
+</html>

@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { listSkills, loadTest, runTest, setSkillsDir } from "./runner.js";
 import { generateTests } from "./generator.js";
 import { printResults, printScorecard, buildReport, loadLatestReport } from "./report.js";
-import { MODEL_CONFIGS } from "./models.js";
+import { MODEL_CONFIGS, hasAnthropic } from "./models.js";
 import type { TestResult } from "./types.js";
 
 const ROOT = import.meta.dir.replace("/src", "");
@@ -114,7 +114,7 @@ if (values["generate-tests"]) {
 // Determine models
 const modelIds = values.models
   ? values.models.split(",").map((m) => m.trim())
-  : [Bun.env.ANTHROPIC_API_KEY ? "claude" : "gpt"];
+  : [hasAnthropic() ? "claude" : "gpt"];
 
 const models = modelIds.map((id) => {
   const config = MODEL_CONFIGS[id];

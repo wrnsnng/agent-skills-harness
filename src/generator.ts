@@ -1,9 +1,9 @@
-import { callModel, MODEL_CONFIGS } from "./models.js";
+import { callModel, MODEL_CONFIGS, hasAnthropic } from "./models.js";
 import { loadSkillMd, listSkills } from "./runner.js";
 import type { SkillTest } from "./types.js";
 import { join } from "node:path";
 
-const GEN_MODEL = Bun.env.ANTHROPIC_API_KEY ? MODEL_CONFIGS.claude : MODEL_CONFIGS.gpt;
+const GEN_MODEL = hasAnthropic() ? MODEL_CONFIGS.claude : MODEL_CONFIGS.gpt;
 
 export async function generateTests(
   skills: string[],

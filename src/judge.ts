@@ -1,8 +1,8 @@
-import { callModel, MODEL_CONFIGS } from "./models.js";
+import { callModel, MODEL_CONFIGS, hasAnthropic } from "./models.js";
 import type { JudgeResult, TestCase } from "./types.js";
 
 // Use whichever model is available — prefer claude, fall back to gpt
-const JUDGE_MODEL = Bun.env.ANTHROPIC_API_KEY ? MODEL_CONFIGS.claude : MODEL_CONFIGS.gpt;
+const JUDGE_MODEL = hasAnthropic() ? MODEL_CONFIGS.claude : MODEL_CONFIGS.gpt;
 
 export async function judge(
   skillName: string,
